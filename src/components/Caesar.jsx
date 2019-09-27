@@ -1,37 +1,47 @@
-import React, { Component } from 'react';
-import { Textarea, Card } from 'react-rainbow-components';
 import _ from 'lodash';
-
-import { caesar, clean, format, histogram } from '../utils/caesar';
+import React, { Component } from 'react';
+import { Slider, Textarea } from 'react-rainbow-components';
+import { caesar, clean, format, makeHistogram } from '../utils/caesar';
 
 export default class Caesar extends Component {
-  state = {
-    message: '',
-    raw: '',
-    shift: 2,
-    versions: []
-  };
+  constructor(props, context) {
+    super(props, context);
 
-  componentDidMount() {
-    this.encryptMessage('The quick, brown fox jumps over the lazy dog.');
+    this.handleChangeMessage = this.handleChangeMessage.bind(this);
+    this.handleChangeShift = this.handleChangeShift.bind(this);
+
+    this.state = {
+      message: 'The quick, brown fox jumps over the lazy dog.',
+      encoded: 'blub',
+      histogram: [],
+      shift: 10,
+    };
   }
 
-  encryptMessage(message) {
-    const { versions } = this.state;
+  componentDidMount() {
+    this.encryptMessage();
+  }
+
+  encryptMessage() {
+    const { message, shift } = this.state;
     const raw = clean(message);
+    const encoded = caesar(raw, shift);
+    const histogram = makeHistogram(encoded);
 
-    for (let index = 0; index < 26; index += 1) {
-      versions[index] = format(caesar(raw, index));
-    }
-
-    this.setState({ message, raw, versions });
+    this.setState({ encoded, histogram });
   }
 
   handleChangeMessage(event) {
-    this.encryptMessage(event.target.value);
+    this.setState({ message: event.target.value }, this.encryptMessage);
   }
 
-  renderHistogram(histogram) {
+  handleChangeShift(event) {
+    this.setState({ shift: parseInt(event.target.value, 10) }, this.encryptMessage);
+  }
+
+  renderHistogram() {
+    const { histogram } = this.state;
+
     return (
       <table>
         <thead>
@@ -44,7 +54,7 @@ export default class Caesar extends Component {
         <tbody>
           <tr>
             {histogram.map((e, i) => (
-              <td key={i}>{e}</td>
+              <td key={`letter${i}`}>{e}</td>
             ))}
           </tr>
         </tbody>
@@ -52,40 +62,46 @@ export default class Caesar extends Component {
     );
   }
 
-  renderVersions() {
-    const versionItems = this.state.versions.map(version => (
-      <div className="rainbow-p-around_large">
-        <Card>
-          <div>{version}</div>
-          <div>{this.renderHistogram(histogram(version))}</div>
-        </Card>
-      </div>
-    ));
-
-    return <div>{versionItems}</div>;
-  }
-
   render() {
-    const { message } = this.state;
+    const { message, encoded, histogram, shift } = this.state;
 
     return (
       <div>
-        <h1 className="header">Caesar</h1>
+        <h1 className="ui header">Caesar</h1>
 
-        <div className="rainbow-p-vertical_large rainbow-p-horizontal_xx-large rainbow-m-horizontal_xx-large">
+        <div className="ui segment">
+          <h2>Message</h2>
           <Textarea
             id="example-textarea-1"
             label="Secret Message"
             rows={5}
             value={message}
             placeholder="Secret message here"
-            onChange={e => this.handleChangeMessage(e)}
+            onChange={this.handleChangeMessage}
           />
         </div>
 
-        <h3>Decrypted Messages</h3>
+        <div className="ui segment">
+          <h2>Shift</h2>
+          <Slider
+            label="Letter Shift"
+            value={shift}
+            min={0}
+            max={25}
+            step={1}
+            onChange={this.handleChangeShift}
+          />
+        </div>
 
-        {this.renderVersions()}
+        <div className="ui segment">
+          <h2>Decrypted Message</h2>
+          <div>{format(encoded)}</div>
+        </div>
+
+        <div className="ui segment">
+          <h2>Histogram</h2>
+          <div>{this.renderHistogram(histogram)}</div>
+        </div>
       </div>
     );
   }

@@ -4,7 +4,7 @@ import Caesar from './Caesar';
 
 function App() {
   return (
-    <div className="App">
+    <div className="ui main text container">
       <Caesar />
     </div>
   );
