@@ -1,4 +1,4 @@
-const charA = "A".charCodeAt(0);
+const charA = 'A'.charCodeAt(0);
 
 function ord(charCode) {
   return charCode - charA;
@@ -7,16 +7,16 @@ function ord(charCode) {
 function addToLetter(charCode, delta) {
   const o = ord(charCode);
   // console.log('o', o);
-  const od = o + parseInt(delta);
+  const od = o + parseInt(delta, 10);
   // console.log('od', od);
-  const newCharcode = charA + (od) % 26;
+  const newCharcode = charA + (od % 26);
 
   // console.log(String.fromCharCode(charCode), '->', String.fromCharCode(newCharcode));
   return String.fromCharCode(newCharcode);
 }
 
 export function caesar(input, shift = 2) {
-  let output = "";
+  let output = '';
 
   for (let i = 0; i < input.length; i += 1) {
     output += addToLetter(input.charCodeAt(i), shift);
@@ -26,11 +26,16 @@ export function caesar(input, shift = 2) {
 }
 
 export function clean(input) {
-  return input.toUpperCase().replace(/[^A-Z]/g, '');
+  return input
+    .toUpperCase()
+    .replace(/Ä/g, 'AE')
+    .replace(/Ö/g, 'OE')
+    .replace(/Ü/g, 'UE')
+    .replace(/[^A-Z]/g, '');
 }
 
 export function format(input) {
-  return input.match(/\w{1,5}/g).join(" ");
+  return input.match(/\w{1,5}/g).join(' ');
 }
 
 export function makeHistogram(input) {
@@ -39,6 +44,10 @@ export function makeHistogram(input) {
   for (let i = 0; i < input.length; i += 1) {
     const o = ord(input.charCodeAt(i));
     histogram[o] += 1;
+  }
+
+  for (let i = 0; i < histogram.length; i += 1) {
+    histogram[i] /= input.length;
   }
 
   return histogram;

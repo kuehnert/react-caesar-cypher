@@ -1,7 +1,7 @@
-import _ from 'lodash';
 import React, { Component } from 'react';
-import { Slider, Textarea } from 'react-rainbow-components';
+import { Chart, Slider, Textarea, Dataset } from 'react-rainbow-components';
 import { caesar, clean, format, makeHistogram } from '../utils/caesar';
+import './Caesar.css'
 
 export default class Caesar extends Component {
   constructor(props, context) {
@@ -11,9 +11,39 @@ export default class Caesar extends Component {
     this.handleChangeShift = this.handleChangeShift.bind(this);
 
     this.state = {
-      message: 'The quick, brown fox jumps over the lazy dog.',
+      alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+      message:
+        'Es war einmal ein kleines süßes Mädchen, das hatte jedermann lieb, der sie nur ansah, am allerliebsten aber ihre Großmutter, die wusste gar nicht, was sie alles dem Kinde geben sollte. Einmal schenkte sie ihm ein Käppchen von rotem Samt, und weil ihm das so wohl stand, und es nichts anders mehr tragen wollte, hieß es nur das Rotkäppchen.',
       encoded: 'blub',
       histogram: [],
+      histogramGerman: [
+        0.0651,
+        0.0189,
+        0.0306,
+        0.0508,
+        0.174,
+        0.0166,
+        0.0301,
+        0.0476,
+        0.0755,
+        0.0027,
+        0.0121,
+        0.0344,
+        0.0253,
+        0.0978,
+        0.0251,
+        0.0079,
+        0.0002,
+        0.07,
+        0.0758,
+        0.0615,
+        0.0435,
+        0.0067,
+        0.0189,
+        0.0003,
+        0.0004,
+        0.0113,
+      ],
       shift: 10,
     };
   }
@@ -40,21 +70,21 @@ export default class Caesar extends Component {
   }
 
   renderHistogram() {
-    const { histogram } = this.state;
+    const { alphabet, histogram } = this.state;
 
     return (
       <table>
         <thead>
           <tr>
-            {_.times(26, i => (
-              <th key={i}>{String.fromCharCode(65 + i)}</th>
+            {alphabet.map(e => (
+              <th key={e}>{e}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           <tr>
             {histogram.map((e, i) => (
-              <td key={`letter${i}`}>{e}</td>
+              <td key={i}>{e.toFixed(2)}</td>
             ))}
           </tr>
         </tbody>
@@ -63,14 +93,14 @@ export default class Caesar extends Component {
   }
 
   render() {
-    const { message, encoded, histogram, shift } = this.state;
+    const { alphabet, message, encoded, histogram, histogramGerman, shift } = this.state;
 
     return (
       <div>
         <h1 className="ui header">Caesar</h1>
 
+        <h2>Message</h2>
         <div className="ui segment">
-          <h2>Message</h2>
           <Textarea
             id="example-textarea-1"
             label="Secret Message"
@@ -79,10 +109,7 @@ export default class Caesar extends Component {
             placeholder="Secret message here"
             onChange={this.handleChangeMessage}
           />
-        </div>
 
-        <div className="ui segment">
-          <h2>Shift</h2>
           <Slider
             label="Letter Shift"
             value={shift}
@@ -93,14 +120,32 @@ export default class Caesar extends Component {
           />
         </div>
 
+        <h2>Decrypted Message</h2>
         <div className="ui segment">
-          <h2>Decrypted Message</h2>
-          <div>{format(encoded)}</div>
+          <div className="code">{format(encoded)}</div>
         </div>
 
+        <h2>Histogram</h2>
         <div className="ui segment">
-          <h2>Histogram</h2>
-          <div>{this.renderHistogram(histogram)}</div>
+          <div className="rainbow-align-content_center">
+            <Chart
+              labels={alphabet}
+              type="bar"
+              className="rainbow-m-horizontal_xx-large rainbow-m-top_x-large">
+              <Dataset
+                title="Message"
+                values={histogram}
+                backgroundColor="#1de9b6"
+                borderColor="#1de9b6"
+              />
+              <Dataset
+                title="German"
+                values={histogramGerman}
+                backgroundColor="#01b6f5"
+                borderColor="#01b6f5"
+              />
+            </Chart>
+          </div>
         </div>
       </div>
     );
