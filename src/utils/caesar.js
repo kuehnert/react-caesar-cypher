@@ -35,7 +35,7 @@ export function clean(input) {
 }
 
 export function format(input) {
-  return input.match(/\w{1,5}/g).join(' ');
+  return input ? input.match(/\w{1,5}/g).join(' ') : '';
 }
 
 export function makeHistogram(input) {
@@ -52,3 +52,17 @@ export function makeHistogram(input) {
 
   return histogram;
 }
+
+export function standardDeviation(histogram1, histogram2) {
+  let stdv = 0;
+
+  for (let i = 0; i < histogram1.length; i += 1) {
+    stdv += (histogram1[i] - histogram2[i]) ** 2;
+  }
+
+  stdv = Math.sqrt(stdv / (histogram1.length - 1));
+
+  return stdv;
+}
+
+export const random = (max) => Math.floor(Math.random() * max);

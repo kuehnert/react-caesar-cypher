@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { Chart, Slider, Textarea, Dataset } from 'react-rainbow-components';
-import { caesar, clean, format, makeHistogram } from '../utils/caesar';
-import './Caesar.css'
+import { caesar, clean, format, makeHistogram, standardDeviation, random } from '../utils/caesar';
+import puzzles from '../utils/puzzles';
+import './Caesar.css';
 
 export default class Caesar extends Component {
   constructor(props, context) {
@@ -10,41 +11,42 @@ export default class Caesar extends Component {
     this.handleChangeMessage = this.handleChangeMessage.bind(this);
     this.handleChangeShift = this.handleChangeShift.bind(this);
 
+    this.histogramGerman = [
+      0.0651,
+      0.0189,
+      0.0306,
+      0.0508,
+      0.174,
+      0.0166,
+      0.0301,
+      0.0476,
+      0.0755,
+      0.0027,
+      0.0121,
+      0.0344,
+      0.0253,
+      0.0978,
+      0.0251,
+      0.0079,
+      0.0002,
+      0.07,
+      0.0758,
+      0.0615,
+      0.0435,
+      0.0067,
+      0.0189,
+      0.0003,
+      0.0004,
+      0.0113,
+    ];
+
     this.state = {
       alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
-      message:
-        'Es war einmal ein kleines süßes Mädchen, das hatte jedermann lieb, der sie nur ansah, am allerliebsten aber ihre Großmutter, die wusste gar nicht, was sie alles dem Kinde geben sollte. Einmal schenkte sie ihm ein Käppchen von rotem Samt, und weil ihm das so wohl stand, und es nichts anders mehr tragen wollte, hieß es nur das Rotkäppchen.',
+      message: puzzles[random(puzzles.length)],
       encoded: 'blub',
       histogram: [],
-      histogramGerman: [
-        0.0651,
-        0.0189,
-        0.0306,
-        0.0508,
-        0.174,
-        0.0166,
-        0.0301,
-        0.0476,
-        0.0755,
-        0.0027,
-        0.0121,
-        0.0344,
-        0.0253,
-        0.0978,
-        0.0251,
-        0.0079,
-        0.0002,
-        0.07,
-        0.0758,
-        0.0615,
-        0.0435,
-        0.0067,
-        0.0189,
-        0.0003,
-        0.0004,
-        0.0113,
-      ],
-      shift: 10,
+      shift: random(26),
+      stdv: 0,
     };
   }
 
@@ -57,8 +59,9 @@ export default class Caesar extends Component {
     const raw = clean(message);
     const encoded = caesar(raw, shift);
     const histogram = makeHistogram(encoded);
+    const stdv = standardDeviation(histogram, this.histogramGerman);
 
-    this.setState({ encoded, histogram });
+    this.setState({ encoded, histogram, stdv });
   }
 
   handleChangeMessage(event) {
@@ -84,6 +87,7 @@ export default class Caesar extends Component {
         <tbody>
           <tr>
             {histogram.map((e, i) => (
+              // eslint-disable-next-line react/no-array-index-key
               <td key={i}>{e.toFixed(2)}</td>
             ))}
           </tr>
@@ -93,7 +97,7 @@ export default class Caesar extends Component {
   }
 
   render() {
-    const { alphabet, message, encoded, histogram, histogramGerman, shift } = this.state;
+    const { alphabet, message, encoded, histogram, shift, stdv } = this.state;
 
     return (
       <div>
@@ -125,13 +129,19 @@ export default class Caesar extends Component {
           <div className="code">{format(encoded)}</div>
         </div>
 
+        <h2>Standard Deviation</h2>
+        <div className="ui segment">
+          <div className="code center">{stdv.toFixed(3)}</div>
+        </div>
+
         <h2>Histogram</h2>
         <div className="ui segment">
-          <div className="rainbow-align-content_center">
+          <div className="">
             <Chart
               labels={alphabet}
               type="bar"
-              className="rainbow-m-horizontal_xx-large rainbow-m-top_x-large">
+              disableAnimations
+              className="">
               <Dataset
                 title="Message"
                 values={histogram}
@@ -140,7 +150,7 @@ export default class Caesar extends Component {
               />
               <Dataset
                 title="German"
-                values={histogramGerman}
+                values={this.histogramGerman}
                 backgroundColor="#01b6f5"
                 borderColor="#01b6f5"
               />
